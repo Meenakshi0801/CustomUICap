@@ -1,0 +1,23 @@
+{
+    "name": "CustomUICAPProj-srv",
+    "version": "1.0.0",
+    "engines": {
+        "node": "^14"
+    },
+    "dependencies": {
+        "@sap/cds": "^5",
+        "@sap/hana-client": "^2.6.61",
+        "express": "^4"
+    },
+    "scripts": {
+        "start": "cds serve gen/csn.json"
+    },
+    "cds": {
+        "requires": {
+            "db": {
+                "kind": "hana",
+                "model": "gen/csn.json"
+            }
+        }
+    }
+}

@@ -1,0 +1,138 @@
+_schema-version: "3.1"
+ID: CustomUICAPProj
+description: A simple CAP project.
+version: 1.0.0
+modules:
+- name: CustomUICAPProj-srv
+  type: nodejs
+  path: srv
+  requires:
+  - name: CustomUICAPProj-db        
+  provides:
+  - name: srv-api
+    properties:
+      srv-url: ${default-url}
+- name: CustomUICAPProj-db-deployer
+  type: hdb
+  path: db
+  requires:
+  - name: CustomUICAPProj-db
+  parameters:
+    buildpack: nodejs_buildpack
+- name: CustomUICAPProj-destination-content
+  type: com.sap.application.content
+  requires:
+  - name: CustomUICAPProj-destination-service
+    parameters:
+      content-target: true
+  - name: CustomUICAPProj_html_repo_host
+    parameters:
+      service-key:
+        name: CustomUICAPProj_html_repo_host-key
+  - name: uaa_CustomUICAPProj
+    parameters:
+      service-key:
+        name: uaa_CustomUICAPProj-key
+  parameters:
+    content:
+      instance:
+        destinations:
+        - Name: MyCustomerCustomUI_CustomUICAPProj_html_repo_host
+          ServiceInstanceName: CustomUICAPProj-html5-app-host-service
+          ServiceKeyName: CustomUICAPProj_html_repo_host-key
+          sap.cloud.service: MyCustomerCustomUI
+        - Authentication: OAuth2UserTokenExchange
+          Name: MyCustomerCustomUI_uaa_CustomUICAPProj
+          ServiceInstanceName: CustomUICAPProj-xsuaa-service
+          ServiceKeyName: uaa_CustomUICAPProj-key
+          sap.cloud.service: MyCustomerCustomUI
+        existing_destinations_policy: update
+  build-parameters:
+    no-source: true
+- name: CustomUICAPProj_ui_deployer
+  type: com.sap.application.content
+  path: .
+  requires:
+  - name: uaa_CustomUICAPProj
+  - name: CustomUICAPProj_html_repo_host
+    parameters:
+      content-target: true
+  build-parameters:
+    build-result: resources
+    requires:
+    - artifacts:
+      - customfioriapp-content.zip
+      name: customfioriapp
+      target-path: resources/
+- name: customfioriapp
+  type: html5
+  path: app/customfioriapp
+  requires:
+  - name: uaa_CustomUICAPProj
+  build-parameters:
+    builder: custom
+    path: app/customfioriapp
+    commands:  
+     - npm run build
+    supported-platforms: []
+## ends here  
+resources:
+- name: CustomUICAPProj-db
+  type: com.sap.xs.hdi-container
+  parameters:
+    service: hana
+    service-plan: hdi-shared
+  properties:
+    hdi-service-name: ${service-name}
+- name: CustomUICAPProj-destination-service
+  type: org.cloudfoundry.managed-service
+  requires:
+  - name: srv-api
+  parameters:
+    service: destination
+    service-name: CustomUICAPProj-destination-service
+    service-plan: lite
+    config:
+           HTML5Runtime_enabled: true
+           version: 1.0.0
+           init_data:
+            subaccount:
+             existing_destinations_policy: update
+           
+             destinations:
+             - Name: CustomUICAPProj
+               Authentication: NoAuthentication               
+               ProxyType: Internet
+               Type: HTTP
+               URL: ~{srv-api/srv-url}
+               HTML5.DynamicDestination: true
+               HTML5.ForwardAuthToken: true
+             
+             
+            ##ends here
+            
+    
+    ## add requires part for the destination config
+  
+  ## ends here
+- name: CustomUICAPProj_html_repo_host
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: html5-apps-repo
+    service-name: CustomUICAPProj-html5-app-host-service
+    service-plan: app-host
+- name: uaa_CustomUICAPProj
+  type: org.cloudfoundry.managed-service
+  parameters:
+    path: ./xs-security.json
+    service: xsuaa
+    service-name: CustomUICAPProj-xsuaa-service
+    service-plan: application
+parameters:
+  enable-parallel-deployments: true
+build-parameters:
+  before-all:
+  - builder: custom
+    commands:
+    - npm install --production
+    - npx -p @sap/cds-dk cds build --production

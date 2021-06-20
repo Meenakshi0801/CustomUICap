@@ -1,0 +1,84 @@
+<mvc:View
+    controllerName="customers.customfioriapp.controller.View1"
+    xmlns:mvc="sap.ui.core.mvc"
+    displayBlock="true"
+    xmlns="sap.m"
+>
+	<Shell id="shell">
+		<App id="app">
+			<pages>
+				<Page id="page" title="Customer Details">
+					<content>
+                    <!-- <List headerText="fsdfs"  	items="{customerModel>/value}">
+			<items>
+				<ObjectListItem title="{customerModel>ID}">
+					<attributes>
+						<ObjectAttribute text="{customerModel>PARTNER}"/>
+						
+					</attributes>
+				</ObjectListItem>
+			</items>
+		</List> -->
+
+        	<Table id="idCustomersTable"
+		inset="false"
+		items="{
+			path: 'customerModel>/value',
+			sorter: {
+				path: 'ID'
+			}
+		}">
+		<!-- <headerToolbar>
+			<OverflowToolbar>
+				<content>
+					<Title text="Customer Details" level="H2"/>
+					<ToolbarSpacer />
+					
+					
+				</content>
+			</OverflowToolbar>
+		</headerToolbar> -->
+		<!-- <infoToolbar>
+			<OverflowToolbar>
+				<Label text="Wide range of available products"/>
+			</OverflowToolbar>
+		</infoToolbar> -->
+		<columns>
+			<Column
+				width="12em">
+				<Text text="ID" />
+			</Column>
+			<Column
+				minScreenWidth="Tablet"
+				demandPopin="true">
+				<Text text="Partner" />
+			</Column>
+			<Column
+				minScreenWidth="Desktop"
+				demandPopin="true"
+				>
+				<Text text="BPCOUNTRY_code" />
+			</Column>
+		
+		</columns>
+		<items>
+			<ColumnListItem>
+				<cells>
+					
+					<Text
+						text="{customerModel>ID}" />
+					<Text
+						text="{customerModel>PARTNER}" />
+                        <Text
+						text="{customerModel>BPCOUNTRY_code}" />
+				
+				</cells>
+			</ColumnListItem>
+		</items>
+	</Table>
+                    </content>
+				</Page>
+			</pages>
+		</App>
+	</Shell>
+</mvc:View>
